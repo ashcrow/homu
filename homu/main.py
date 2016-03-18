@@ -3,7 +3,7 @@ import github3
 import toml
 import json
 import re
-from . import utils
+from homu import utils
 import logging
 from threading import Thread, Lock
 import time
@@ -15,7 +15,7 @@ from itertools import chain
 from queue import Queue
 import os
 import subprocess
-from .git_helper import SSH_KEY_FILE
+from homu.git_helper import SSH_KEY_FILE
 import shlex
 import sys
 

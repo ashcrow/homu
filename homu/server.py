@@ -1,9 +1,9 @@
 import hmac
 import json
 import urllib.parse
-from .main import PullReqState, parse_commands, db_query, INTERRUPTED_BY_HOMU_RE, synchronize
-from . import utils
-from .utils import lazy_debug
+from homu.main import PullReqState, parse_commands, db_query, INTERRUPTED_BY_HOMU_RE, synchronize
+from homu import utils
+from homu.utils import lazy_debug
 import github3
 import jinja2
 import requests
