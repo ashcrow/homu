@@ -876,7 +876,7 @@ def main():
                 except ValueError as ve:
                     logger.fatal('Malformed json in config.')
         except FileNotFoundError:
-            raise RuntimeError('No configuration provided')
+            raise RuntimeError('No configuration provided in cfg.toml nor cfg.json')
 
     gh = github3.login(token=cfg['github']['access_token'])
     user = gh.user()
