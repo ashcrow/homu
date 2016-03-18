@@ -581,7 +581,13 @@ def start_build(state, repo_cfgs, buildbot_slots, logger, db, git_cfg):
                     if mat:
                         url = 'https://api.travis-ci.org/{}/{}/builds/{}'.format(state.owner, state.name, mat.group(1))
                         res = requests.get(url)
-                        travis_sha = json.loads(res.text)['commit']
+                        travis_sha = None
+                        try:
+                            travis_sha = json.loads(res.text)['commit']
+                        except ValueError as ve:
+                            logger.error('Travis provided malformed json')
+                            logger.debug('invalid json: {}'.format(res.text))
+                            return False
                         travis_commit = state.get_repo().commit(travis_sha)
                         if travis_commit:
                             base_sha = state.get_repo().ref('heads/' + state.base_ref).object.sha
@@ -897,8 +903,14 @@ def main():
         with open('cfg.toml') as fp:
             cfg = toml.loads(fp.read())
     except FileNotFoundError:
-        with open('cfg.json') as fp:
-            cfg = json.loads(fp.read())
+        try:
+            with open('cfg.json') as fp:
+                try:
+                    cfg = json.loads(fp.read())
+                except ValueError as ve:
+                    logger.fatal('Malformed json in config.')
+        except FileNotFoundError:
+            raise RuntimeError('No configuration provided in cfg.toml nor cfg.json')
 
     gh = github3.login(token=cfg['github']['access_token'])
     user = gh.user()

@@ -106,17 +106,23 @@ def callback():
     response.content_type = 'text/plain'
 
     code = request.query.code
-    state = json.loads(request.query.state)
+    state = None
+    try:
+        state = json.loads(request.query.state)
 
-    lazy_debug(logger, lambda: 'state: {}'.format(state))
+        lazy_debug(logger, lambda: 'state: {}'.format(state))
 
-    res = requests.post('https://github.com/login/oauth/access_token', data={
-        'client_id': g.cfg['github']['app_client_id'],
-        'client_secret': g.cfg['github']['app_client_secret'],
-        'code': code,
-    })
-    args = urllib.parse.parse_qs(res.text)
-    token = args['access_token'][0]
+        res = requests.post('https://github.com/login/oauth/access_token', data={
+            'client_id': g.cfg['github']['app_client_id'],
+            'client_secret': g.cfg['github']['app_client_secret'],
+            'code': code,
+        })
+        args = urllib.parse.parse_qs(res.text)
+        token = args['access_token'][0]
+    except ValueError as ve:
+        logger.error('/callback state was not valid json.')
+        lazy_debug(logger, lambda: 'invalid json: {}'.format(request.query.state))
+        abort(400, 'Bad State')
 
     repo_label = state['repo_label']
     repo_cfg = g.repo_cfgs[repo_label]
@@ -459,8 +465,15 @@ def buildbot():
     logger = g.logger.getChild('buildbot')
 
     response.content_type = 'text/plain'
+    packets = None
+    try:
+        packets = json.loads(request.forms.packets)
+    except ValueError as ve:
+        logger.error('/buildbot packets was not valid json.')
+        lazy_debug(logger, lambda: 'invalid json: {}'.format(request.forms.packets))
+        abort(400, 'Bad Packets')
 
-    for row in json.loads(request.forms.packets):
+    for row in packets:
         if row['event'] == 'buildFinished':
             info = row['payload']['build']
             lazy_debug(logger, lambda: 'info: {}'.format(info))
@@ -575,7 +588,13 @@ def buildbot():
 def travis():
     logger = g.logger.getChild('travis')
 
-    info = json.loads(request.forms.payload)
+    info = None
+    try:
+        info = json.loads(request.forms.payload)
+    except ValueError as ve:
+        logger.error('/travis packets was not valid json.')
+        lazy_debug(logger, lambda: 'invalid json: {}'.format(request.forms.payload))
+        abort(400, 'Bad Payload')
 
     lazy_debug(logger, lambda: 'info: {}'.format(utils.remove_url_keys_from_json(info)))
 
