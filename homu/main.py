@@ -584,7 +584,7 @@ def start_build(state, repo_cfgs, buildbot_slots, logger, db, git_cfg):
                         travis_sha = None
                         try:
                             travis_sha = json.loads(res.text)['commit']
-                        except ValueError as ve:
+                        except ValueError:
                             logger.error('Travis provided malformed json')
                             logger.debug('invalid json: {}'.format(res.text))
                             return False
@@ -907,7 +907,7 @@ def main():
             with open('cfg.json') as fp:
                 try:
                     cfg = json.loads(fp.read())
-                except ValueError as ve:
+                except ValueError:
                     logger.fatal('Malformed json in config.')
         except FileNotFoundError:
             raise RuntimeError('No configuration provided in cfg.toml nor cfg.json')

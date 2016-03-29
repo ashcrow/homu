@@ -119,7 +119,7 @@ def callback():
         })
         args = urllib.parse.parse_qs(res.text)
         token = args['access_token'][0]
-    except ValueError as ve:
+    except ValueError:
         logger.error('/callback state was not valid json.')
         lazy_debug(logger, lambda: 'invalid json: {}'.format(request.query.state))
         abort(400, 'Bad State')
@@ -468,7 +468,7 @@ def buildbot():
     packets = None
     try:
         packets = json.loads(request.forms.packets)
-    except ValueError as ve:
+    except ValueError:
         logger.error('/buildbot packets was not valid json.')
         lazy_debug(logger, lambda: 'invalid json: {}'.format(request.forms.packets))
         abort(400, 'Bad Packets')
@@ -591,7 +591,7 @@ def travis():
     info = None
     try:
         info = json.loads(request.forms.payload)
-    except ValueError as ve:
+    except ValueError:
         logger.error('/travis packets was not valid json.')
         lazy_debug(logger, lambda: 'invalid json: {}'.format(request.forms.payload))
         abort(400, 'Bad Payload')
